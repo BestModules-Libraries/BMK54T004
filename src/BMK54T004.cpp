@@ -1,17 +1,16 @@
 /*****************************************************************
 File:        BMK54T004.cpp
-Author:      BESTSOLUTIONS
+Author:      BEST MODULES CORP.
 Description: The Arduino communicates with the BMK54T004 for the IIC and gets the corresponding values  
-Version:     V1.0.2   -- 2024-05-07
+Version:     V1.0.3   -- 2025-04-30
 ******************************************************************/
 #include "BMK54T004.h"
 /**********************************************************
 Description: Constructor
 Parameters:  intPin :INT Output pin connection with Arduino 
-             theWire : Wire object if your board has more than one I2C interface  
-             
-Return:          
-Others:      
+             theWire : Wire object if your board has more than one I2C interface           
+Return:      None    
+Others:      None
 **********************************************************/
 BMK54T004::BMK54T004(uint8_t intPin,TwoWire *theWire)
 {
@@ -21,8 +20,8 @@ BMK54T004::BMK54T004(uint8_t intPin,TwoWire *theWire)
 /**********************************************************
 Description: Module Initial
 Parameters:  i2c_addr :Module IIC address           
-Return:          
-Others:      
+Return:      void    
+Others:      None
 **********************************************************/
 void BMK54T004::begin(uint8_t i2c_addr)
 {
@@ -31,12 +30,29 @@ void BMK54T004::begin(uint8_t i2c_addr)
        _i2caddr = i2c_addr;
 }
 /**********************************************************
+Description: get FW Ver
+Parameters:  void            
+Return:      Ver 
+Others:      None
+**********************************************************/
+uint16_t BMK54T004::getFWVer()
+{
+    uint8_t KeyCMD[1]={0X0B};
+    uint8_t fwBuff[2]={0};
+    writeBytes(KeyCMD,1); 
+    delay(5);
+    readBytes(fwBuff,2);
+    uint16_t fwValue = (fwBuff[0]<<8)+fwBuff[1];
+    delay(10);
+    return fwValue;
+}
+/**********************************************************
 Description: get Key Status
-Parameters:              
+Parameters:  void            
 Return:      Returns the INT state  
              0:INT output low level  press
              1:INT output high level   unpress    
-Others:      
+Others:      None
 **********************************************************/
 uint8_t BMK54T004::getINT()
 {
@@ -44,14 +60,14 @@ uint8_t BMK54T004::getINT()
 } 
 /**********************************************************
 Description: read Key Value
-Parameters:        
-Return:     kvalue:Variables for storing value Key
+Parameters:  void      
+Return:      kvalue:Variables for storing value Key
                  kvalue=0:No key is pressed
                   bit0=1 : key1 is pressed
                   bit1=1 : key2 is pressed
                   bit2=1 : key3 is pressed
                   bit3=1 : key4 is pressed     
-Others:      
+Others:     None 
 **********************************************************/
 uint8_t BMK54T004::readKeyValue()
 {
@@ -66,11 +82,11 @@ uint8_t BMK54T004::readKeyValue()
 }
 /**********************************************************
 Description: read Slide Value
-Parameters:        
+Parameters:  void      
 Return:      svalue:Variables for storing value Slide
                    svalue = 0:The slider is untouched
                    svalue = n:the  Slide n is touched(1~8)
-Others:      
+Others:      None
 **********************************************************/
 uint8_t BMK54T004::readSlideValue()
 {
@@ -88,8 +104,8 @@ Description: get Threshold
 Parameters:  buff :Store acquired 12 touch threshold 
                buff[0]~buff[7]：Store the threshold of the slider at positions 1 to 8
                buff[8]~buff[11]：Store the threshold of key1 to key4     
-Return:        
-Others:      
+Return:      void    
+Others:      None    
 **********************************************************/
 void BMK54T004::getThreshold(uint8_t buff[])
 {
@@ -106,7 +122,7 @@ Parameters:  buff :Set acquired 12 touch threshold
 Return:      Implementation status:
               0:Success 
               1:Fail    
-Others:      
+Others:      None
 **********************************************************/
 int BMK54T004::setThreshold(uint8_t buff[])
 { 
@@ -151,12 +167,85 @@ int BMK54T004::setAllThresholdLevel(uint8_t level)
   delay(10);
   return SUCCESS; 
 }
+
+/**********************************************************
+Description: set Led Mode
+Parameters:  mode : 0 - flower key mode
+                    1 - CMD Mode
+Return:  void 
+Others:  none     
+**********************************************************/
+void BMK54T004::setLedMode(uint8_t mode)
+{
+  if(mode <= 1)
+  {
+    uint8_t ledStatusCMD[3] = {0x02,0,0};  //Clear the LED status to avoid the light from turning on when setting the CMD mode
+    writeBytes(ledStatusCMD,3); 
+    uint8_t ledModeCMD[2] = {0x01,mode};
+    writeBytes(ledModeCMD,2);
+    delay(10); 
+  }
+}
+
+/**********************************************************
+Description: get Led Mode
+Parameters:  void
+Return:  Led Mode:
+              0:flower key mode 
+              1:CMD Mode 
+Others:  none     
+**********************************************************/
+uint8_t BMK54T004::getLedMode()
+{
+  uint8_t value[1]={0};
+  uint8_t ledModeCMD[1]={0X01};
+  writeBytes(ledModeCMD,1);
+  delay(5);
+  readBytes(value,1);
+  delay(10); 
+  return value[0];
+}
+
+/**********************************************************
+Description: write Led
+Parameters:  data : led status(bit0~bit12：Key1~Key12)
+            0: led off
+            1: led on
+Return:  void 
+Others:  none     
+**********************************************************/
+void BMK54T004::writeLed(uint16_t data)
+{
+  uint8_t LedCMD[3] = {0x02,(uint8_t)data,(uint8_t)(data>>8)};
+  writeBytes(LedCMD,3);
+  delay(10); 
+}
+
+/**********************************************************
+Description: read Led
+Parameters:  void
+Return:  led status(bit0~bit12：Key1~Key12)
+            0: led off
+            1: led on
+Others:  none     
+**********************************************************/
+uint16_t BMK54T004::readLed()
+{
+  uint8_t value[2]={0};
+  uint8_t LedCMD[1]={0X02};
+  writeBytes(LedCMD,1);
+  delay(5);
+  readBytes(value,2);
+  delay(10); 
+  return ((uint16_t)value[1]<<8)+value[0];
+}
+
 /**********************************************************
 Description: writeBytes
 Parameters:  wbuf :the bytes sent
              wlen :the length of the data sent          
-Return:        
-Others:      
+Return:      void    
+Others:      None       
 **********************************************************/
 void BMK54T004::writeBytes(uint8_t wbuf[], uint8_t wlen)
 {
@@ -175,7 +264,7 @@ Parameters:  rbuf :the bytes receive
 Return:      Implementation status:
               0:Success 
               1:Fail   
-Others:      
+Others:      None
 **********************************************************/
 uint8_t BMK54T004::readBytes(uint8_t rbuf[], uint8_t rlen)
 {

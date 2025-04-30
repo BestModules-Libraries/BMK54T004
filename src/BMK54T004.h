@@ -1,8 +1,8 @@
 /*****************************************************************
 File:        BMK54T004.h
-Author:      BESTSOLUTIONS
+Author:      BEST MODULES CORP.
 Description: Define classes and required variables
-Version:     V1.0.2   -- 2024-05-07
+Version:     V1.0.3   -- 2025-04-30
 ******************************************************************/
 
 #ifndef _BMK54T004_H_
@@ -20,6 +20,7 @@ class BMK54T004
   public:
   BMK54T004(uint8_t intPin,TwoWire *theWire = &Wire);
   void begin(uint8_t i2c_addr = BMK54T004_IICADDR);
+  uint16_t getFWVer();
   uint8_t getINT();
   uint8_t readKeyValue();
   uint8_t readSlideValue();
@@ -27,7 +28,11 @@ class BMK54T004
   int setThreshold(uint8_t buff[]);
   int setAllThresholdLevel(uint8_t level);
 
-
+  void setLedMode(uint8_t mode);
+  uint8_t getLedMode();
+  void writeLed(uint16_t data);
+  uint16_t readLed();
+  
   private:
   void writeBytes(uint8_t wbuf[], uint8_t wlen);
   uint8_t readBytes(uint8_t rbuf[], uint8_t rlen);
