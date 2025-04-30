@@ -39,7 +39,7 @@ Version History
 &emsp;&emsp;- Initial public release.  
 * **V1.0.2**  
 &emsp;&emsp;- Change the contents of the function "setThreshold" : The sensitivity of the array is 14 bytes.  
-&emsp;&emsp;- Correction section comments.
+&emsp;&emsp;- Correction section comments.  
 **V1.0.3**  
 &emsp;&emsp;- Add function:getFWVer.  
 &emsp;&emsp;- Add function:setLedMode,getLedMode,writeLed,readLed  
